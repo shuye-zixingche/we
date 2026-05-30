@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>悄悄话弹窗 · 星月神话</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: '微软雅黑', sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .control-panel {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .start-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .start-btn:hover {
+            background-color: #ff4d94;
+            transform: scale(1.05);
+        }
+        .start-btn:disabled {
+            opacity: 0.6;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .popup {
+            position: fixed;
+            width: 240px;
+            height: 140px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .popup-message {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            line-height: 1.6;
+            font-weight: bold;
+            color: #222;
+        }
+        .close-btn {
+            padding: 8px 0;
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .close-btn:hover {
+            background-color: #ff4d94;
+        }
+
+        .heart {
+            position: absolute;
+            color: #FF69B4;
+            font-size: 22px;
+            opacity: 0;
+            animation: floatHearts linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+        @keyframes floatHearts {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://web-cloudmusic.oss-cn-beijing.aliyuncs.com/xingyueshenhua.mp3" type="audio/mpeg">
+        <source src="https://www.ldsysw.com/demo/music/xingyueshenhua.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="control-panel">
+        <h3>点击下方按钮开始发送悄悄话</h3>
+        <button class="start-btn" id="startBtn">开始 ❤️</button>
+    </div>
+
+    <script>
+        // 情话库
+        const messages = [
+            "想你的每一天都充满阳光",
+            "你的笑容是我最大的动力",
+            "即使相隔千里，心也紧紧相连",
+            "每一次想起你，都忍不住嘴角上扬",
+            "愿时光慢些，让我能多想你一会儿",
+            "你是我疲惫生活里的温柔梦想",
+            "见不到你的日子，都在期待重逢",
+            "所有的温柔，都想留给你",
+            "世界很大，幸福很小，有你就好",
+            "喜欢你，不止今天，而是每一天",
+            "风里有你的气息，所以连呼吸都很甜",
+            "把对你的想念，折成星星藏在枕头下",
+            "想和你分享每一杯奶茶的最后一口",
+            "你的存在，让普通的日子都闪着光",
+            "哪怕只是想起你的名字，都觉得安心",
+            "攒了好多日常，等见面时一一讲给你听",
+            "你走的每一步，都在我目光里",
+            "想陪你看遍四季，从春樱到冬雪",
+            "你的声音，是我听过最温柔的旋律",
+            "连发呆时，思绪都会不自觉飘向你",
+            "和你有关的一切，我都记得很清楚",
+            "期待下次见面，想给你一个大大的拥抱",
+            "你让我觉得，等待也是一件浪漫的事",
+            "把你藏在我的未来里，从未动摇",
+            "见到你时，所有的不安都烟消云散",
+            "想和你慢慢走，走过三餐四季",
+            "你的小习惯，都悄悄刻在了我心里",
+            "只要想到你，就有了对抗世界的勇气",
+            "月光很美，但不及你眼底的星光",
+            "往后的日子，想和你一起浪费时间"
+        ];
+
+        const colors = [
+            "#FFD1DC", "#FFF0F5", "#BFEFFF", "#E6E6FA", 
+            "#FFFACD", "#F0E68C", "#98FB98", "#FFE4E1"
+        ];
+
+        // 变速配置
+        const TOTAL_POPUPS = 100;
+        const PHASE1_INTERVAL = 520;      // 0.52秒
+        const PHASE2_INTERVAL = 340;      // 0.34秒
+        const PHASE3_INTERVAL = 131.4;    // 0.1314秒
+        const PHASE1_DURATION = 3000;      // 第一阶段持续3秒
+
+        let isActive = false;
+        let popupsCreated = 0;
+        let phase1StartTime = null;
+        let nextTimer = null;
+        let heartInterval = null;
+
+        const startBtn = document.getElementById('startBtn');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // 爱心漂浮（优化：更快出现，更密集）
+        function createHeart() {
+            const h = document.createElement('div');
+            h.className = 'heart';
+            h.textContent = ['♥', '❤️'][Math.floor(Math.random() * 2)];
+            const size = 16 + Math.random() * 14;
+            h.style.fontSize = size + 'px';
+            h.style.left = Math.random() * window.innerWidth + 'px';
+            h.style.animationDuration = (7 + Math.random() * 10) + 's';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 16000);
+        }
+
+        function startHearts() {
+            if (heartInterval) clearInterval(heartInterval);
+            // 立即生成大量爱心，让漂浮效果瞬间可见
+            for (let i = 0; i < 60; i++) createHeart();          // 立即60个
+            for (let i = 0; i < 200; i++) setTimeout(createHeart, i * 10); // 密集追加
+            // 持续稳定飘落
+            heartInterval = setInterval(createHeart, 150);
+        }
+
+        function stopHearts() {
+            if (heartInterval) {
+                clearInterval(heartInterval);
+                heartInterval = null;
+            }
+            document.querySelectorAll('.heart').forEach(h => h.remove());
+        }
+
+        // 音乐播放（自动尝试）
+        function playMusic() {
+            bgMusic.volume = 0.7;
+            bgMusic.play().catch(e => console.warn("自动播放失败，请手动点击页面", e));
+        }
+
+        function stopMusic() {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
+        // 创建弹窗（关闭按钮无爱心）
+        function createPopup() {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            const maxX = window.innerWidth - 260;
+            const maxY = window.innerHeight - 160;
+            popup.style.left = Math.random() * maxX + 10 + "px";
+            popup.style.top = Math.random() * maxY + 10 + "px";
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            popup.innerHTML = `<div class="popup-message">${msg}</div><button class="close-btn">收到啦</button>`;
+            popup.querySelector('.close-btn').addEventListener('click', () => popup.remove());
+            document.body.appendChild(popup);
+        }
+
+        // 变速调度（递归）
+        function scheduleNext() {
+            if (!isActive) return;
+            if (popupsCreated >= TOTAL_POPUPS) {
+                finish();
+                return;
+            }
+            let delay = PHASE2_INTERVAL;
+            const remaining = TOTAL_POPUPS - popupsCreated;
+            if (remaining <= 10) {
+                delay = PHASE3_INTERVAL;
+            } else if (phase1StartTime !== null) {
+                const elapsed = Date.now() - phase1StartTime;
+                if (elapsed < PHASE1_DURATION) delay = PHASE1_INTERVAL;
+                else delay = PHASE2_INTERVAL;
+            }
+            nextTimer = setTimeout(() => {
+                if (!isActive) return;
+                createPopup();
+                popupsCreated++;
+                if (popupsCreated === 1 && phase1StartTime === null) phase1StartTime = Date.now();
+                scheduleNext();
+                nextTimer = null;
+            }, delay);
+        }
+
+        function finish() {
+            if (nextTimer) clearTimeout(nextTimer);
+            isActive = false;
+            startBtn.disabled = false;
+            startBtn.textContent = "开始 ❤️";
+        }
+
+        function fullReset() {
+            if (nextTimer) clearTimeout(nextTimer);
+            isActive = false;
+            popupsCreated = 0;
+            phase1StartTime = null;
+            document.querySelectorAll('.popup').forEach(p => p.remove());
+            stopHearts();
+            stopMusic();
+        }
+
+        // 主流程：点击开始
+        function startExperience() {
+            fullReset();
+            
+            // 1. 爱心立即大量漂浮（极速出现）
+            startHearts();
+            
+            // 2. 尝试播放音乐
+            playMusic();
+            
+            // 3. 弹窗立即开始（无延迟）
+            isActive = true;
+            popupsCreated = 0;
+            phase1StartTime = null;
+            startBtn.disabled = true;
+            startBtn.textContent = "发送中...";
+            
+            // 直接生成第一个弹窗并开始调度
+            createPopup();
+            popupsCreated++;
+            if (popupsCreated === 1) phase1StartTime = Date.now();
+            scheduleNext();
+        }
+
+        startBtn.addEventListener('click', startExperience);
+        
+        window.addEventListener('beforeunload', () => {
+            if (nextTimer) clearTimeout(nextTimer);
+            if (heartInterval) clearInterval(heartInterval);
+        });
+    </script>
+</body>
+</html>

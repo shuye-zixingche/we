@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>娱乐集合</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        /* 默认白色背景 */
+        body {
+            background: #f5f7fa;
+            padding: 20px;
+            transition: background 0.4s ease; /* 平滑过渡 */
+        }
+        /* 女巫页黑紫色背景 */
+        body.poison-bg {
+            background: #1a102e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        /* 女巫页容器半透明黑紫 */
+        body.poison-bg .container {
+            background: #2b1b4a;
+            box-shadow: 0 0 30px rgba(128, 0, 255, 0.4);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        /* 女巫页标题变色 */
+        body.poison-bg h1 {
+            color: #e0b0ff;
+            text-shadow: 0 0 10px #8000ff;
+        }
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .nav-btn {
+            background: #4a7aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .nav-btn.active {
+            background: #2c5edf;
+        }
+        .game-page {
+            display: none;
+        }
+        .game-page.active {
+            display: block;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .fold-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .fold-btn {
+            background: #34495e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 8px;
+            cursor: pointer;
+        }
+        .fold-content {
+            display: none;
+            line-height: 1.8;
+        }
+        .red-text {
+            color: #ff4757;
+            font-weight: bold;
+        }
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            background: #4a7aff;
+            color: white;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn:hover {
+            background: #2c5edf;
+        }
+        .box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        label {
+            font-weight: bold;
+            color: #333;
+        }
+        .num-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .num-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        #playerCount {
+            width: 70px;
+            height: 40px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        select {
+            padding: 8px;
+            flex: 1;
+            min-width: 120px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .word-display, .q-result, .role-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            min-height: 60px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .a-result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4757;
+            min-height: 50px;
+            line-height: 1.5;
+            display: none;
+            text-align: center;
+        }
+        .tip {
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+        .result-area {
+            margin-top: 10px;
+            text-align: left;
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .col {
+            line-height: 2.2;
+        }
+        .left-col {
+            flex: 2;
+        }
+        .right-col {
+            flex: 1;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ffd7a0;
+        }
+        .played-title {
+            font-weight: bold;
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+        .played-list {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .center-btn {
+            text-align: center;
+        }
+
+        /* 1. 你画我 - 橙 */
+        #draw .section { background: #fff5fa; }
+        #draw .fold-title { color: #ff9800; }
+        #draw .fold-btn { background: #ff9800; }
+        #draw .btn { background: #ff9800; color:white; }
+        #draw .num-btn { background: #ff9800; color:white; }
+
+        /* 2. 默契 - 绿 */
+        #team .section { background: #f1f8e9; }
+        #team .fold-title { color: #4caf50; }
+        #team .fold-btn { background: #4caf50; }
+        #team .btn { background: #4caf50; color:white; }
+        #team .num-btn { background: #4caf50; color:white; }
+
+        /* 3. 萝卜蹲 - 橘红 */
+        #radish .section { background: #fff2e0; }
+        #radish .fold-title { color: #ff7043; }
+        #radish .fold-btn { background: #ff7043; }
+        #radish .btn { background: #ff7043; color:white; }
+        #radish .num-btn { background: #ff7043; color:white; }
+
+        /* 4. 反向指令 - 蓝 */
+        #reverse .section { background: #f0f7ff; }
+        #reverse .fold-title { color: #4a90e2; }
+        #reverse .fold-btn { background: #4a90e2; }
+        #reverse .btn { background: #4a90e2; color:white; }
+        #reverse .num-btn { background: #4a90e2; color:white; }
+
+        /* 5. 脑筋急转弯 - 暖橙 */
+        #brain .section { background: #fff5e8; }
+        #brain .fold-title { color: #ff9800; }
+        #brain .fold-btn { background: #ff9800; }
+        #brain .btn { background: #ff9800; color:white; }
+        #brain .num-btn { background: #ff9800; color:white; }
+        #brain .tip { color: #ff4757; }
+
+        /* 6. 谁是卧底 - 玫红 */
+        #spy .section { background: #fff5fa; }
+        #spy .fold-title { color: #e84a7c; }
+        #spy .fold-btn { background: #e84a7c; }
+        #spy .btn { background: #e84a7c; color:white; }
+        #spy .num-btn { background: #e84a7c; color:white; }
+        #spy .tip { color: #ff4757; }
+
+        /* 7. 狼人杀 - 深灰 */
+        #wolf .section { background: #f7f9fc; }
+        #wolf .fold-title { color: #2c3e50; }
+        #wolf .fold-btn { background: #34495e; }
+        #wolf .btn { background: #34495e; color:white; }
+        #wolf .num-btn { background: #34495e; color:white; }
+        #wolf .tip { color: #e74c3c; }
+
+        /* 8. 消消乐 - 蓝 */
+        #match .section { background: #f0f7ff; }
+        #match .fold-title { color: #4a90e2; }
+        #match .fold-btn { background: #4a90e2; }
+        #match .btn { background: #4a90e2; color:white; }
+        #match .num-btn { background: #4a90e2; color:white; }
+        #match .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        #match .card {
+            aspect-ratio: 1 / 1;
+            background: #4a90e2;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        #match .card.flipped {
+            background: #ffffff;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+        }
+        #match .card.matched {
+            visibility: hidden;
+        }
+        #match .score-board {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #match .player {
+            padding: 8px 15px;
+            border-radius: 8px;
+            background: #eef2ff;
+            color: #2c3e50;
+        }
+        #match .player.active {
+            background: #4a90e2;
+            color: white;
+        }
+        #match .control-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        #match .rule-box {
+            background: #fff8e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        /* 9. 女巫的毒药 - 暗黑紫（继承背景） */
+        #poison .section { background: transparent; }
+        #poison .fold-title { color: #e0b0ff; }
+        #poison .fold-btn { background: #8000ff; }
+        #poison .btn { background: #8000ff; color:white; }
+        #poison .num-btn { background: #8000ff; color:white; }
+        #poison .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px auto;
+            max-width: 320px;
+        }
+        #poison .cell {
+            aspect-ratio: 1 / 1;
+            background: #3c2a66;
+            border-radius: 12px;
+            border: 2px solid #8000ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #e0b0ff;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 8px rgba(128, 0, 255, 0.3);
+        }
+        #poison .cell:hover {
+            background: #503a88;
+            transform: scale(1.05);
+        }
+        #poison .cell.poison {
+            background: #7b1fa2;
+            border-color: #ff2255;
+            color: #ff2255;
+            font-weight: bold;
+            box-shadow: 0 0 15px #ff2255;
+        }
+        #poison .cell.safe {
+            background: #2d4a2d;
+            border-color: #4cd964;
+            color: #4cd964;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1> 娱乐集合</h1>
+
+    <div class="nav">
+        <button class="nav-btn active" onclick="switchGame('draw')">🎨 你画我猜</button>
+        <button class="nav-btn" onclick="switchGame('team')">🤝 默契大挑战</button>
+        <button class="nav-btn" onclick="switchGame('radish')">🥕 萝卜蹲</button>
+        <button class="nav-btn" onclick="switchGame('reverse')">🔁 反向指令</button>
+        <button class="nav-btn" onclick="switchGame('brain')">🧠 脑筋急转弯</button>
+        <button class="nav-btn" onclick="switchGame('spy')">🕵️ 谁是卧底</button>
+        <button class="nav-btn" onclick="switchGame('wolf')">🐺 狼人杀</button>
+        <button class="nav-btn" onclick="switchGame('match')">🍒 消消乐</button>
+        <button class="nav-btn" onclick="switchGame('poison')">🔮 女巫的毒药</button>
+    </div>
+
+    <!-- 1. 你画我猜 -->
+    <div id="draw" class="game-page active">
+        <h2 style="text-align:center;margin-bottom:15px;color:#ff9800">🎨 你画我猜</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('draw-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="draw-rule" class="fold-content">
+                <p>1. <span class="red-text">一人看词画画，其他人猜词</span>。</p>
+                <p>2. <span class="red-text">不能写字、不能画字母</span>。</p>
+                <p>3. <span class="red-text">猜对得分，轮流换画手</span>。</p>
+            </div>
+        </div>
+        <div class="section center-btn">
+            <button class="btn" onclick="getDraw()">🎲 随机出题</button>
+        </div>
+        <div class="box">
+            <div id="drawWord" class="word-display">点击按钮出题</div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('draw-allWords')">
+                <h3>📜 全部词库总览</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="draw-allWords" class="fold-content all-words">
+                <p><strong>🐾 动物类：</strong>小猫、小狗、大象、长颈鹿、猴子、兔子、熊猫、老虎、狮子、企鹅、海豚、金鱼、蜗牛、蝴蝶、蜜蜂</p>
+                <p><strong>🍰 食物类：</strong>苹果、香蕉、西瓜、冰淇淋、汉堡、蛋糕、面条、米饭、牛奶、糖果、披萨、薯条、巧克力、鸡蛋、胡萝卜</p>
+                <p><strong>📦 日常用品：</strong>电视、手机、电脑、书包、铅笔、牙刷、雨伞、眼镜、鞋子、衣服、杯子、手表、台灯、冰箱、电话</p>
+                <p><strong>🏃 动作类：</strong>跑步、游泳、跳舞、唱歌、吃饭、睡觉、刷牙、看书、看电视、放风筝、踢足球、打篮球、骑自行车、洗澡、打喷嚏</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 默契大挑战 -->
+    <div id="team" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#4caf50">🤝 默契大挑战</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('team-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="team-rule" class="fold-content">
+                <p>1. <span class="red-text">两人一组，同时说一个词</span>。</p>
+                <p>2. <span class="red-text">说一样就算默契成功</span>。</p>
+                <p>3. <span class="red-text">轮流挑战，默契最多获胜</span>。</p>
+            </div>
+        </div>
+        <div class="section center-btn">
+            <button class="btn" onclick="getTeam()">🎲 随机出题</button>
+        </div>
+        <div class="box">
+            <div id="teamWord" class="word-display">点击按钮出题</div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('team-allWords')">
+                <h3>📜 全部题库总览</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="team-allWords" class="fold-content all-words">
+                最喜欢的颜色、最喜欢的水果、最喜欢的动物、最喜欢的动画片、周末最爱做的事、最喜欢的零食、最喜欢的玩具、最喜欢的季节、想要的超能力、最喜欢的课程、每天最好的起床时间、保护牙齿的方法、夏天解暑的好方法、让身体强壮的运动、饭前要做的事、有益眼睛的活动、健康的小零食、每天要晒的太阳、让心情变好的运动、多喝水的好处、绿色植物的好处、饭后不能做的事、保持干净的方法、户外最喜欢的运动、帮助消化的好习惯
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 萝卜蹲 -->
+    <div id="radish" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#ff7043">🥕 萝卜蹲</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('radish-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="radish-rule" class="fold-content">
+                <p>1. <span class="red-text">每人选一个代号</span>。</p>
+                <p>2. <span class="red-text">XX蹲XX蹲，XX蹲完XX蹲</span>。</p>
+                <p>3. <span class="red-text">说错/慢了就淘汰</span>。</p>
+            </div>
+        </div>
+        <div class="section center-btn">
+            <button class="btn" onclick="getRadish()">🎲 随机出题</button>
+        </div>
+        <div class="box">
+            <div id="radishWord" class="word-display">点击按钮出题</div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('radish-allWords')">
+                <h3>📜 全部角色总览</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="radish-allWords" class="fold-content all-words">
+                <p><strong>🎨 颜色类：</strong>红萝卜、黄萝卜、蓝萝卜、绿萝卜、紫萝卜、粉萝卜、白萝卜、青萝卜、橙萝卜</p>
+                <p><strong>🐾 动物类：</strong>小猫、小狗、小兔、小熊、小猴、小鸟、小鱼、小羊、小象、小松鼠</p>
+                <p><strong>🔢 数字类：</strong>一号、二号、三号、四号、五号、六号、七号、八号、九号、十号</p>
+                <p><strong>🍎 水果类：</strong>苹果、香蕉、草莓、西瓜、葡萄、橙子、桃子、梨子、芒果</p>
+                <p><strong>🍬 零食类：</strong>糖果、饼干、果冻、酸奶、棒棒糖、蛋糕、布丁、面包</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 反向指令 -->
+    <div id="reverse" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#4a90e2">🔁 反向指令</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('reverse-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="reverse-rule" class="fold-content">
+                <p>1. <span class="red-text">听到指令做相反动作</span>。</p>
+                <p>2. <span class="red-text">做错或慢了就淘汰</span>。</p>
+                <p>3. <span class="red-text">可以选右边当成指令</span>。</p>
+            </div>
+        </div>
+        <div class="section center-btn">
+            <button class="btn" onclick="getReverse()">🎲 随机出题</button>
+        </div>
+        <div class="box">
+            <div id="reverseWord" class="word-display">点击按钮出题</div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('reverse-all')">
+                <h3>📜 全部题库</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="reverse-all" class="fold-content two-column">
+                <div class="col">
+                    向前走--向后退  向后退--向前走<br>
+                    左转--右转  右转--左转<br>
+                    举左手--举右手  举右手--举左手<br>
+                    抬左脚--抬右脚  抬右脚--抬左脚<br>
+                    睁眼--闭眼  闭眼--睁眼<br>
+                    点头--摇头  摇头--点头<br>
+                    蹲下--跳起  跳起--蹲下
+                </div>
+                <div class="col">
+                    向前跳--向后跳  向后跳--向前跳<br>
+                    拍手--背手  背手--拍手<br>
+                    弯腰--站直  站直--弯腰<br>
+                    抬头--低头  低头--抬头<br>
+                    微笑--严肃  严肃--微笑<br>
+                    伸懒腰--缩身体  缩身体--伸懒腰<br>
+                    哈哈大笑--装哭  装哭--哈哈大笑
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 脑筋急转弯 -->
+    <div id="brain" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#ff9800">🧠 脑筋急转弯</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('brain-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="brain-rule" class="fold-content">
+                <p>1. <span class="red-text">开动大脑、趣味猜谜</span>。</p>
+                <p>2. <span class="red-text">答对得分，答错不扣分</span>。</p>
+                <p>3. <span class="red-text">已玩题目不会重复出现</span>。</p>
+            </div>
+        </div>
+        <div class="main-row" style="display:flex;gap:20px;">
+            <div class="left-col">
+                <div class="section">
+                    <h3>📚 趣味题库</h3>
+                    <div class="box">
+                        <button class="btn" onclick="getBrain()">🎲 随机出题</button>
+                        <button class="btn" onclick="showBrain()">💡 显示答案</button>
+                        <button class="btn" onclick="resetBrain()">🔄 重置题库</button>
+                        <div id="brainQ" class="q-result">点击按钮出题</div>
+                        <div id="brainA" class="a-result"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-col">
+                <div class="played-title">✅ 已玩题目</div>
+                <div id="brainList" class="played-list">暂无记录</div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('brain-all')">
+                <h3>📜 全部题库</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="brain-all" class="fold-content all-words"></div>
+        </div>
+    </div>
+
+    <!-- 6. 谁是卧底 -->
+    <div id="spy" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#e84a7c">🕵️ 谁是卧底</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('spy-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="spy-rule" class="fold-content">
+                <p>1. <span class="red-text">开局所有人闭眼或转身，不能偷看平民词和卧底词</span>。</p>
+                <p>2. <span class="red-text">随机分配词语：多数人拿到平民词，少数人（1-2人）拿到卧底词</span>。</p>
+                <p>3. <span class="red-text">依次查看身份，看完立刻转身闭眼</span>。</p>
+                <p>4. 每人轮流描述自己的词，<span class="red-text">不能直接说出词语</span>。</p>
+                <p>5. 一轮描述后投票，<span class="red-text">票数最多者出局</span>。</p>
+                <p>6. 卧底隐藏到最后获胜，平民淘汰所有卧底获胜。</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="row">
+                <label>玩家人数：</label>
+                <div class="num-control">
+                    <button class="num-btn" onclick="changeSpyCount(-1)">-</button>
+                    <input id="spyCount" type="number" min="3" max="12" value="6" readonly>
+                    <button class="num-btn" onclick="changeSpyCount(+1)">+</button>
+                </div>
+                <button class="btn" onclick="confirmSpy()">✅ 确定人数</button>
+            </div>
+            <div id="spyInfo" style="color:#e84a7c;font-weight:bold;margin:10px 0;"></div>
+            <div class="row">
+                <label>词库选择：</label>
+                <select id="spyLib">
+                    <option value="0">日常用品</option>
+                    <option value="1">水果食物</option>
+                    <option value="2">动物植物</option>
+                    <option value="3">学习用品</option>
+                    <option value="4">运动项目</option>
+                    <option value="5">职业身份</option>
+                    <option value="6">影视动漫</option>
+                </select>
+            </div>
+            <button class="btn" onclick="randomSpy()">🎲 随机抽词</button>
+            <button class="btn" onclick="resetSpy()">🔄 重置游戏</button>
+        </div>
+        <div class="box">
+            <div id="spyWord" class="word-display">请先确定人数，再随机抽词</div>
+            <div id="spyTip" class="tip">已重置，请点击随机抽词重新玩</div>
+        </div>
+        <div class="section">
+            <button class="btn" onclick="nextSpy()">👉 下一位玩家</button>
+            <button class="btn" onclick="toggleSpy()">📋 查看本局身份</button>
+            <div class="box result-area" id="spyResult" style="display:none;">
+                <div id="spyResultList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 狼人杀 -->
+    <div id="wolf" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#2c3e50">🐺 狼人杀</h2>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('wolf-rule')">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="wolf-rule" class="fold-content">
+                <p>1. <span class="red-text">需要一名主持人，开局所有人闭眼，不能偷看身份</span>。</p>
+                <p>2. <span class="red-text">玩家越多，狼人越多：6-8人=2狼，9-12人=3狼</span>。</p>
+                <p>3. 身份功能：<br>
+                <span class="red-text">🐺狼人：夜晚杀死一名玩家，白天隐藏身份</span><br>
+                <span class="red-text">🔮预言家：每晚查验一名玩家是好人还是狼人</span><br>
+                <span class="red-text">🧪女巫：解药可救活被狼人杀死的玩家，毒药可毒死一名玩家</span><br>
+                <span class="red-text">👤平民：白天发言、投票放逐疑似狼人</span>
+                </p>
+                <p>4. <span class="red-text">依次查看身份，看完立刻闭眼</span>。</p>
+                <p>5. <span class="red-text">狼人全出局=好人胜；好人全出局=狼人胜</span>。</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="fold-title" onclick="toggleFold('wolf-order')">
+                <h3>📌 游戏顺序</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div id="wolf-order" class="fold-content">
+                <p>1. 发身份：全部闭眼，依次查看身份并闭眼。</p>
+                <p>2. 夜晚阶段：<span class="red-text">狼人睁眼杀人 → 预言睁眼查验 → 女巫睁眼用药</span>。</p>
+                <p>3. 白天阶段：公布死讯 → 轮流发言 → 投票放逐一人。</p>
+                <p>4. 循环：重复夜晚+白天，直到一方获胜。</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="row">
+                <label>玩家人数：</label>
+                <div class="num-control">
+                    <button class="num-btn" onclick="changeWolfCount(-1)">-</button>
+                    <input id="wolfCount" type="number" min="6" max="12" value="8" readonly>
+                    <button class="num-btn" onclick="changeWolfCount(+1)">+</button>
+                </div>
+                <button class="btn" onclick="confirmWolf()">✅ 确定人数</button>
+            </div>
+            <div id="wolfInfo" style="color:#34495e;font-weight:bold;margin:10px 0;"></div>
+            <button class="btn" onclick="randomWolf()">🎲 随机发身份</button>
+            <button class="btn" onclick="resetWolf()">🔄 重置游戏</button>
+        </div>
+        <div class="box">
+            <div id="wolfRole" class="role-display">请先确定人数，再随机发身份</div>
+            <div id="wolfTip" class="tip">已重置，请点击随机发身份</div>
+        </div>
+        <div class="section">
+            <button class="btn" onclick="nextWolf()">👉 下一位玩家</button>
+            <button class="btn" onclick="toggleWolf()">📋 查看全部身份</button>
+            <div class="box result-area" id="wolfResult" style="display:none;">
+                <div id="wolfResultList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. 消消乐 -->
+    <div id="match" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#4a90e2">🍒 消消乐</h2>
+
+        <div class="rule-box">
+            <div class="fold-title" onclick="toggleRule()">
+                <h3>📋 游戏规则</h3>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div class="rule-content" id="ruleContent">
+                <p>1. 共24张牌（12对图案），2-5个玩家轮流游戏。</p>
+                <p>2. 初始牌面全部反面，当前玩家每次翻开2张牌。</p>
+                <p>3. 两张图案相同：配对成功，牌消失，玩家+1分，<strong>可继续翻牌</strong>。</p>
+                <p>4. 两张图案不同：配对失败，牌翻面，<strong>换下一玩家</strong>。</p>
+                <p>5. 所有牌配对完毕，<strong>分数最高者获胜</strong>。</p>
+            </div>
+        </div>
+
+        <div class="control-row">
+            <label>玩家人数：</label>
+            <button class="num-btn" onclick="changePlayerCount(-1)">-</button>
+            <input id="playerCount" type="number" min="2" max="5" value="4" readonly>
+            <button class="num-btn" onclick="changePlayerCount(+1)">+</button>
+            <button class="btn" onclick="setPlayerCount()">✅ 确定人数</button>
+        </div>
+
+        <div class="score-board" id="scoreBoard"></div>
+
+        <div class="grid" id="cardGrid"></div>
+
+        <div class="btn-area">
+            <button class="btn" onclick="shuffleCards()">🔀 洗牌</button>
+            <button class="btn" onclick="changeSkin()">🎨 更换图案</button>
+            <button class="btn" onclick="initGame()">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <!-- 9. 女巫的毒药 -->
+    <div id="poison" class="game-page">
+        <h2 style="text-align:center;margin-bottom:15px;color:#e0b0ff">女巫的毒药</h2>
+
+        <div class="section">
+            <div class="fold-title" onclick="toggleRulePoison()">
+                <span>📜 游戏说明</span>
+                <button class="fold-btn">展开</button>
+            </div>
+            <div class="fold-content" id="ruleContentPoison">
+                <p>1. 玩家1先选1个格子作为自己的毒药，点击确认。</p>
+                <p>2. 玩家2再选1个格子作为自己的毒药，点击确认。</p>
+                <p>3. 两人轮流点击格子试探。</p>
+                <p>4. 点到任意毒药直接死亡，对方获胜。</p>
+                <p>5. 安全格子会变绿色，换对方行动。</p>
+            </div>
+        </div>
+
+        <div id="tip" style="font-size:20px;font-weight:bold;color:#d8b8ff;margin-bottom:20px;text-align:center;">玩家1，请选择你的毒药格子，然后点【确认】</div>
+
+        <div style="font-size:22px;font-weight:bold;color:#e0b0ff;margin:15px 0;text-align:center;" id="turn">当前：玩家1 放置毒药</div>
+
+        <div class="grid" id="poisonGrid"></div>
+
+        <div style="text-align:center;">
+            <button class="btn" id="confirmBtnPoison" onclick="confirmPoison()">确认毒药</button>
+            <button class="btn" onclick="restartGame()">重新开始</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// 全局切换背景：点女巫→黑紫，其他→白色
+function switchGame(id) {
+    document.querySelectorAll('.game-page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // 核心：切换body背景类
+    if (id === 'poison') {
+        document.body.classList.add('poison-bg');
+    } else {
+        document.body.classList.remove('poison-bg');
+    }
+}
+
+// 全局折叠
+function toggleFold(id) {
+    const content = document.getElementById(id);
+    const btn = content.closest('.section')?.querySelector(`.fold-title[onclick*="${id}"] .fold-btn`) || 
+                content.previousElementSibling?.querySelector('.fold-btn');
+    if (content.style.display === 'block') {
+        content.style.display = 'none';
+        btn.textContent = '展开';
+    } else {
+        content.style.display = 'block';
+        btn.textContent = '收起';
+    }
+}
+
+// 1. 你画我猜
+const drawWords = ["苹果","香蕉","西瓜","葡萄","草莓","芒果","橙子","老虎","大象","兔子","小鸟","蝴蝶","熊猫","猴子","书包","铅笔","橡皮","尺子","课本","文具盒","钢笔","篮球","足球","羽毛球","跳绳","游泳","跑步","乒乓球","房子","汽车","飞机","火车","自行车","轮船","地铁","医生","老师","警察","厨师","工人","司机","护士","雨伞","牙刷","手机","电脑","电视","冰箱","空调","蛋糕","面包","汉堡","奶茶","果汁","薯条","披萨"];
+function getDraw() {
+    const idx = Math.floor(Math.random() * drawWords.length);
+    document.getElementById('drawWord').innerText = drawWords[idx];
+}
+
+// 2. 默契大挑战
+function getTeam() {
+    const allText = document.getElementById('team-allWords').innerText.trim();
+    const arr = allText.split('、').map(s=>s.trim()).filter(s=>s);
+    const idx = Math.floor(Math.random() * arr.length);
+    document.getElementById('teamWord').innerText = arr[idx];
+}
+
+// 3. 萝卜蹲
+const radishCategories = [
+    "红萝卜、黄萝卜、蓝萝卜、绿萝卜、紫萝卜、粉萝卜、白萝卜、青萝卜、橙萝卜",
+    "小猫、小狗、小兔、小熊、小猴、小鸟、小鱼、小羊、小象、小松鼠",
+    "一号、二号、三号、四号、五号、六号、七号、八号、九号、十号",
+    "苹果、香蕉、草莓、西瓜、葡萄、橙子、桃子、梨子、芒果",
+    "糖果、饼干、果冻、酸奶、棒棒糖、蛋糕、布丁、面包"
+];
+function getRadish() {
+    const idx = Math.floor(Math.random() * radishCategories.length);
+    document.getElementById('radishWord').innerText = radishCategories[idx];
+}
+
+// 4. 反向指令
+const reverseWords = ["向前走--向后退","向后退--向前走","左转--右转","右转--左转","举左手--举右手","举右手--举左手","抬左脚--抬右脚","抬右脚--抬左脚","睁眼--闭眼","闭眼--睁眼","点头--摇头","摇头--点头","蹲下--跳起","跳起--蹲下","向前跳--向后跳","向后跳--向前跳","拍手--背手","背手--拍手","弯腰--站直","站直--弯腰","抬头--低头","低头--抬头","微笑--严肃","严肃--微笑","伸懒腰--缩身体","缩身体--伸懒腰","哈哈大笑--装哭","装哭--哈哈大笑"];
+function getReverse() {
+    const idx = Math.floor(Math.random() * reverseWords.length);
+    document.getElementById('reverseWord').innerText = reverseWords[idx];
+}
+
+// 5. 脑筋急转弯
+const brainQna = [
+    {q:"什么东西明明是你的，别人却用得比你多？",a:"名字"},
+    {q:"什么门永远关不上？",a:"球门"},
+    {q:"什么东西越洗越脏？",a:"水"},
+    {q:"天气越热，爬得越高？",a:"温度计"},
+    {q:"打死它，流自己的血？",a:"蚊子"},
+    {q:"闭上眼睛才能看到？",a:"梦"},
+    {q:"打破才能用？",a:"蛋"},
+    {q:"最容易滑倒的动物？",a:"狐狸（狡猾）"},
+    {q:"什么车没有轮子？",a:"风车"},
+    {q:"什么布剪不断？",a:"瀑布"},
+    {q:"什么动物最爱贴在墙上？",a:"海豹（海报）"},
+    {q:"什么书里毛病最多？",a:"医书"},
+    {q:"什么球离人最近？",a:"眼球"},
+    {q:"什么东西有嘴不说话？",a:"茶壶"},
+    {q:"什么东西越吃越大？",a:"胃口"},
+    {q:"什么人永远打不倒？",a:"稻草人"},
+    {q:"什么水永远用不完？",a:"泪水"},
+    {q:"什么东西能吃不能碰？",a:"亏"},
+    {q:"什么鸟不会飞？",a:"鸵鸟"},
+    {q:"什么路最窄？",a:"冤家路窄"},
+    {q:"什么字永远写不好？",a:"坏字"},
+    {q:"什么动物天天熬夜？",a:"熊猫"},
+    {q:"什么东西越冷越爱出来？",a:"鼻涕"},
+    {q:"什么船从来不下水？",a:"宇宙飞船"},
+    {q:"什么灯不会亮？",a:"熄灯"},
+    {q:"什么牛不吃草？",a:"蜗牛"},
+    {q:"什么瓜不能吃？",a:"傻瓜"},
+    {q:"什么东西白天看不见，晚上才出现？",a:"星星"},
+    {q:"什么东西越旧越好？",a:"老朋友"},
+    {q:"什么动物最有礼貌？",a:"斑马（斑马线）"},
+    {q:"为什么大雁秋天要往南飞？",a:"因为走过去太远了"},
+    {q:"为什么数学书总是很忧郁？",a:"因为它有太多的问题"},
+    {q:"什么东西大家都不想得到？",a:"生病"},
+    {q:"什么东西越长越矮？",a:"蜡烛"},
+    {q:"为什么小明能用一只手就让车停下来？",a:"因为他在拦出租车"},
+    {q:"什么东西没有脚却能走遍天下？",a:"邮票"},
+    {q:"为什么鸡蛋不能敲石头？",a:"因为会碎"},
+    {q:"什么东西越晒越湿？",a:"汗水"},
+    {q:"为什么小明在雨中头发没湿？",a:"因为他戴着帽子"},
+    {q:"什么东西看不见摸不着却很重要？",a:"空气"},
+    {q:"为什么老师从不点名小明？",a:"因为小明不在"},
+    {q:"什么东西只能用左手拿，右手拿不到？",a:"右手肘"},
+    {q:"为什么小狗一看到主人就摇尾巴？",a:"因为尾巴不会点头"},
+    {q:"什么东西越擦越小？",a:"橡皮擦"},
+    {q:"为什么冬天大家都喜欢晒太阳？",a:"因为暖和"},
+    {q:"什么动物晚上眼睛最亮？",a:"猫头鹰"},
+    {q:"为什么小明把闹钟关掉却迟到了？",a:"因为睡过头了"},
+    {q:"什么东西越冷越硬？",a:"冰块"},
+    {q:"为什么小鸟站在电线上不会触电？",a:"因为它只踩一根线"},
+    {q:"哈哈大笑的反义词动作是什么？",a:"装哭"}
+];
+let brainUsed = [];
+let brainCurrent = "";
+function renderBrainAll() {
+    const c = document.getElementById('brain-all');
+    c.innerHTML = brainQna.map((x,i)=>`<p>${i+1}. ${x.q} —— ${x.a}</p>`).join('');
+}
+function renderBrainList() {
+    const list = document.getElementById('brainList');
+    if (brainUsed.length === 0) list.textContent = "暂无记录";
+    else list.innerHTML = brainUsed.map(i=>`${i+1}. ${brainQna[i].q}`).join('<br>');
+}
+function getBrain() {
+    if (brainUsed.length >= brainQna.length) return alert("所有题目都玩完啦！点击重置题库");
+    let idx;
+    do { idx = Math.floor(Math.random() * brainQna.length); } while (brainUsed.includes(idx));
+    brainUsed.push(idx);
+    const x = brainQna[idx];
+    document.getElementById('brainQ').innerText = x.q;
+    brainCurrent = x.a;
+    document.getElementById('brainA').style.display = 'none';
+    renderBrainList();
+}
+function showBrain() {
+    if (brainCurrent) {
+        document.getElementById('brainA').innerText = brainCurrent;
+        document.getElementById('brainA').style.display = 'flex';
+    }
+}
+function resetBrain() {
+    brainUsed = [];
+    brainCurrent = "";
+    document.getElementById('brainQ').innerText = "点击按钮出题";
+    document.getElementById('brainA').style.display = 'none';
+    renderBrainList();
+}
+renderBrainAll();
+
+// 6. 谁是卧底
+const spyLibs = [
+    [["手机","电话"],["电脑","平板"],["牙刷","牙膏"],["雨伞","雨衣"],["书包","背包"]],
+    [["苹果","梨"],["西瓜","冬瓜"],["汉堡","三明治"],["蛋糕","面包"],["奶茶","果汁"]],
+    [["老虎","猫"],["大象","河马"],["玫瑰","月季"],["大树","小草"],["蝴蝶","蜜蜂"]],
+    [["铅笔","钢笔"],["橡皮","修正带"],["课本","练习册"],["尺子","圆规"]],
+    [["篮球","排球"],["跑步","竞走"],["游泳","潜水"],["跳绳","踢毽子"]],
+    [["老师","辅导员"],["医生","护士"],["警察","保安"],["厨师","烘焙师"]],
+    [["奥特曼","铠甲勇士"],["佩奇","乔治"],["白雪公主","灰姑娘"]]
+];
+let spyWord = "", spyUnder = "";
+let spyPlayers = [], spyNow = 0, spyTotal = 0, spyStart = false, spyLast = 6;
+function changeSpyCount(d) {
+    let v = parseInt(document.getElementById('spyCount').value) + d;
+    if (v < 3) v = 3;
+    if (v > 12) v = 12;
+    document.getElementById('spyCount').value = v;
+}
+function confirmSpy() {
+    const v = parseInt(document.getElementById('spyCount').value);
+    spyLast = v;
+    document.getElementById('spyInfo').innerText = `已确定人数：${v}人`;
+    document.getElementById('spyBtn').disabled = false;
+}
+function randomSpy() {
+    const c = spyLast;
+    const lib = spyLibs[document.getElementById('spyLib').value];
+    const pair = lib[Math.floor(Math.random() * lib.length)];
+    spyWord = pair[0]; spyUnder = pair[1];
+    let under = c >=6 ? 2 :1;
+    let arr = Array(c).fill(0);
+    for (let i=0;i<under;i++) arr[i]=1;
+    arr.sort(()=>Math.random()-0.5);
+    spyPlayers = arr.map((is,i)=>({id:i+1,word:is?spyUnder:spyWord,isUnder:is===1}));
+    spyNow=0; spyTotal=c; spyStart=true;
+    document.getElementById('spyWord').innerText = `平民词：${spyWord}｜卧底：${spyUnder}`;
+    document.getElementById('spyTip').style.display = 'none';
+}
+function resetSpy() {
+    spyNow=0; spyTotal=spyLast; spyStart=false;
+    document.getElementById('spyWord').innerText = "请先确定人数，再随机抽词";
+    document.getElementById('spyTip').style.display = 'block';
+    document.getElementById('spyResult').style.display = 'none';
+    document.getElementById('spyResultList').innerHTML = "";
+}
+function nextSpy() {
+    if (!spyStart) return alert("先抽词");
+    if (spyNow >= spyTotal) return alert("已发完");
+    const p = spyPlayers[spyNow];
+    document.getElementById('spyWord').innerText = `玩家${p.id}：${p.word}`;
+    spyNow++;
+}
+function toggleSpy() {
+    const b = document.getElementById('spyResult');
+    if (b.style.display === 'none') {
+        let html = "";
+        spyPlayers.forEach(p=>html += `玩家${p.id}：${p.word}（${p.isUnder?"🕵️卧底":"👤平民"}）<br>`);
+        document.getElementById('spyResultList').innerHTML = html;
+        b.style.display = 'block';
+    } else b.style.display = 'none';
+}
+
+// 7. 狼人杀
+let wolfRoles = [];
+let wolfPlayers = [], wolfNow=0, wolfTotal=0, wolfStart=false, wolfLast=8;
+function changeWolfCount(d) {
+    let v = parseInt(document.getElementById('wolfCount').value)+d;
+    if (v<6) v=6; if (v>12) v=12;
+    document.getElementById('wolfCount').value = v;
+}
+function confirmWolf() {
+    wolfLast = parseInt(document.getElementById('wolfCount').value);
+    document.getElementById('wolfInfo').innerText = `已确定人数：${wolfLast}人`;
+    document.getElementById('wolfBtn').disabled = false;
+}
+function randomWolf() {
+    const c = wolfLast;
+    let wolfNum = c>=9 ?3:2;
+    wolfRoles = [];
+    for (let i=0;i<wolfNum;i++) wolfRoles.push("🐺 狼人");
+    wolfRoles.push("🔮 预言家","🧪 女巫");
+    while (wolfRoles.length < c) wolfRoles.push("👤 平民");
+    wolfRoles.sort(()=>Math.random()-0.5);
+    wolfPlayers = wolfRoles.map((r,i)=>({id:i+1,role:r}));
+    wolfNow=0; wolfTotal=c; wolfStart=true;
+    document.getElementById('wolfRole').innerText = "身份已生成，请依次查看";
+    document.getElementById('wolfTip').style.display = 'none';
+}
+function resetWolf() {
+    wolfNow=0; wolfTotal=wolfLast; wolfStart=false;
+    document.getElementById('wolfRole').innerText = "请先确定人数，再随机发身份";
+    document.getElementById('wolfTip').style.display = 'block';
+    document.getElementById('wolfResult').style.display = 'none';
+    document.getElementById('wolfResultList').innerHTML = "";
+}
+function nextWolf() {
+    if (!wolfStart) return alert("先发身份");
+    if (wolfNow >= wolfTotal) return alert("已发完");
+    const p = wolfPlayers[wolfNow];
+    document.getElementById('wolfRole').innerText = `玩家${p.id}：${p.role}`;
+    wolfNow++;
+}
+function toggleWolf() {
+    const b = document.getElementById('wolfResult');
+    if (b.style.display === 'none') {
+        let html = "";
+        wolfPlayers.forEach(p=>html += `玩家${p.id}：${p.role}<br>`);
+        document.getElementById('wolfResultList').innerHTML = html;
+        b.style.display = 'block';
+    } else b.style.display = 'none';
+}
+
+// 8. 消消乐
+const skins = [
+    ["1","2","3","4","5","6","7","8","9","10","11","12"],
+    ["春","夏","秋","冬","风","雨","雷","电","山","河","日","月"],
+    ["😀","😎","🥳","😇","🤩","😜","🐱","🐶","🍎","🍊","⭐","🌈"]
+];
+let currentSkin = 0;
+
+let cards = [];
+let flipped = [];
+let scores = [];
+let currentPlayer = 0;
+let canClick = true;
+let playerNum = 4;
+
+function toggleRule() {
+    const content = document.getElementById('ruleContent');
+    const btn = document.querySelector('#match .fold-btn');
+    if (content.style.display === 'block') {
+        content.style.display = 'none';
+        btn.textContent = '展开';
+    } else {
+        content.style.display = 'block';
+        btn.textContent = '收起';
+    }
+}
+
+function changePlayerCount(d) {
+    let v = parseInt(document.getElementById('playerCount').value) + d;
+    if (v < 2) v = 2;
+    if (v > 5) v = 5;
+    document.getElementById('playerCount').value = v;
+}
+function setPlayerCount() {
+    playerNum = parseInt(document.getElementById('playerCount').value);
+    initGame();
+}
+
+function initGame() {
+    scores = new Array(playerNum).fill(0);
+    currentPlayer = 0;
+    flipped = [];
+    canClick = true;
+
+    let nums = [];
+    const set = skins[currentSkin];
+    for (let i=0; i<12; i++) {
+        nums.push(set[i], set[i]);
+    }
+    nums.sort(() => Math.random() - 0.5);
+    cards = nums;
+
+    renderCards();
+    updateScoreBoard();
+}
+
+function renderCards() {
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = '';
+    for (let i=0; i<24; i++) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = i;
+        card.textContent = '';
+        card.onclick = () => flipCard(i);
+        grid.appendChild(card);
+    }
+}
+
+function flipCard(id) {
+    if (!canClick) return;
+    const card = document.querySelector(`#match .card[data-id="${id}"]`);
+    if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+    card.classList.add('flipped');
+    card.textContent = cards[id];
+    flipped.push(id);
+
+    if (flipped.length === 2) {
+        canClick = false;
+        setTimeout(checkMatch, 600);
+    }
+}
+
+function checkMatch() {
+    const [a,b] = flipped;
+    const cardA = document.querySelector(`#match .card[data-id="${a}"]`);
+    const cardB = document.querySelector(`#match .card[data-id="${b}"]`);
+
+    if (cards[a] === cards[b]) {
+        cardA.classList.add('matched');
+        cardB.classList.add('matched');
+        scores[currentPlayer]++;
+        flipped = [];
+        canClick = true;
+    } else {
+        cardA.classList.remove('flipped');
+        cardB.classList.remove('flipped');
+        cardA.textContent = '';
+        cardB.textContent = '';
+        flipped = [];
+        currentPlayer = (currentPlayer + 1) % playerNum;
+        canClick = true;
+    }
+
+    updateScoreBoard();
+    checkGameOver();
+}
+
+function shuffleCards() {
+    const matchedIds = [];
+    document.querySelectorAll('#match .card.matched').forEach(c=>{
+        matchedIds.push(Number(c.dataset.id));
+    });
+
+    let remain = [];
+    for (let i=0; i<24; i++) {
+        if (!matchedIds.includes(i)) remain.push(cards[i]);
+    }
+    remain.sort(() => Math.random() - 0.5);
+
+    let newCards = [];
+    let ptr = 0;
+    for (let i=0; i<24; i++) {
+        if (matchedIds.includes(i)) newCards.push(cards[i]);
+        else newCards.push(remain[ptr++]);
+    }
+    cards = newCards;
+    flipped = [];
+    canClick = true;
+    renderCards();
+}
+
+function changeSkin() {
+    currentSkin = (currentSkin + 1) % skins.length;
+    initGame();
+}
+
+function updateScoreBoard() {
+    const board = document.getElementById('scoreBoard');
+    board.innerHTML = '';
+    for (let i=0; i<playerNum; i++) {
+        const p = document.createElement('div');
+        p.className = 'player';
+        p.id = `p${i+1}`;
+        p.textContent = `玩家${i+1}：${scores[i]}分`;
+        if (i === currentPlayer) p.classList.add('active');
+        board.appendChild(p);
+    }
+}
+
+function checkGameOver() {
+    const allMatched = document.querySelectorAll('#match .card.matched').length === 24;
+    if (allMatched) {
+        const maxScore = Math.max(...scores);
+        const winners = scores.map((s,i)=>s===maxScore?i+1:null).filter(Boolean);
+        setTimeout(()=>alert(`游戏结束！\n最高分：${maxScore}分\n获胜玩家：${winners.join('、')}`),300);
+    }
+}
+
+// 9. 女巫的毒药
+let poisonCells = [];
+let p1Choice = -1;
+let p2Choice = -1;
+let poisonPhase = 0;
+let poisonCurrentPlayer = 1;
+let poisonGameOver = false;
+
+function toggleRulePoison() {
+    const content = document.getElementById('ruleContentPoison');
+    const btn = document.querySelector('#poison .fold-btn');
+    if (content.style.display === 'block') {
+        content.style.display = 'none';
+        btn.textContent = '展开';
+    } else {
+        content.style.display = 'block';
+        btn.textContent = '收起';
+    }
+}
+
+function initPoisonGrid() {
+    const grid = document.getElementById('poisonGrid');
+    grid.innerHTML = '';
+    poisonCells = [];
+    for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.id = i;
+        cell.textContent = '?';
+        cell.onclick = () => clickPoisonCell(i);
+        grid.appendChild(cell);
+        poisonCells.push(cell);
+    }
+    p1Choice = -1;
+    p2Choice = -1;
+    poisonPhase = 0;
+    poisonCurrentPlayer = 1;
+    poisonGameOver = false;
+    updatePoisonTip();
+    updatePoisonTurn();
+}
+
+function clickPoisonCell(id) {
+    if (poisonGameOver) return;
+
+    if (poisonPhase === 0) {
+        if (p1Choice !== -1) {
+            poisonCells[p1Choice].classList.remove('poison');
+            poisonCells[p1Choice].textContent = '?';
+        }
+        p1Choice = id;
+        poisonCells[id].classList.add('poison');
+        poisonCells[id].textContent = '1毒';
+        return;
+    }
+    if (poisonPhase === 1) {
+        if (p2Choice !== -1) {
+            poisonCells[p2Choice].classList.remove('poison');
+            poisonCells[p2Choice].textContent = '?';
+        }
+        p2Choice = id;
+        poisonCells[id].classList.add('poison');
+        poisonCells[id].textContent = '2毒';
+        return;
+    }
+
+    if (poisonCells[id].classList.contains('safe') || poisonCells[id].classList.contains('poison')) return;
+
+    if (id === p1Choice || id === p2Choice) {
+        poisonCells[id].classList.add('poison');
+        poisonCells[id].textContent = id === p1Choice ? '1毒药' : '2毒药';
+        endPoisonGame(poisonCurrentPlayer === 1 ? 2 : 1);
+    } else {
+        poisonCells[id].classList.add('safe');
+        poisonCells[id].textContent = '安全';
+        poisonCurrentPlayer = poisonCurrentPlayer === 1 ? 2 : 1;
+        updatePoisonTurn();
+    }
+}
+
+function confirmPoison() {
+    if (poisonPhase === 0) {
+        if (p1Choice === -1) return alert('请先选一个格子！');
+        poisonPhase = 1;
+        poisonCells[p1Choice].classList.remove('poison');
+        poisonCells[p1Choice].textContent = '?';
+        updatePoisonTip();
+        updatePoisonTurn();
+    } else if (poisonPhase === 1) {
+        if (p2Choice === -1) return alert('请先选一个格子！');
+        poisonPhase = 2;
+        poisonCells[p2Choice].classList.remove('poison');
+        poisonCells[p2Choice].textContent = '?';
+        updatePoisonTip();
+        updatePoisonTurn();
+        document.getElementById('confirmBtnPoison').disabled = true;
+    }
+}
+
+function endPoisonGame(winner) {
+    poisonGameOver = true;
+    poisonCells[p1Choice].classList.add('poison');
+    poisonCells[p1Choice].textContent = '1毒药';
+    poisonCells[p2Choice].classList.add('poison');
+    poisonCells[p2Choice].textContent = '2毒药';
+    document.getElementById('tip').innerHTML = `游戏结束！玩家${winner}获胜！`;
+    document.getElementById('turn').textContent = '';
+}
+
+function updatePoisonTip() {
+    const tip = document.getElementById('tip');
+    if (poisonPhase === 0) tip.textContent = '玩家1，请选择你的毒药格子，然后点【确认】';
+    else if (poisonPhase === 1) tip.textContent = '玩家2，请选择你的毒药格子，然后点【确认】';
+    else tip.textContent = `玩家${poisonCurrentPlayer}，点击任意格子试探`;
+}
+
+function updatePoisonTurn() {
+    const turn = document.getElementById('turn');
+    if (poisonPhase === 0) turn.textContent = '当前：玩家1 放置毒药';
+    else if (poisonPhase === 1) turn.textContent = '当前：玩家2 放置毒药';
+    else turn.textContent = `当前：玩家${poisonCurrentPlayer} 行动`;
+}
+
+function restartGame() {
+    initPoisonGrid();
+}
+
+// 页面加载初始化所有游戏
+window.onload = function() {
+    initGame();
+    initPoisonGrid();
+};
+</script>
+
+</body>
+</html>
